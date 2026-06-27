@@ -59,8 +59,7 @@ export default function AuthScreen({
         errorMsg = "Hasło jest zbyt słabe (min. 6 znaków).";
       } else if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
         errorMsg = "Nieprawidłowy e-mail lub hasło.";
-      } else if (err.code === "auth/operation-not-allowed") {
-        errorMsg = "Logowanie e-mailem jest wyłączone w ustawieniach Firebase (kliknij Auth -> Sign-in method -> Email/Password w konsoli Firebase).";
+     
       } else {
         errorMsg = `Błąd: ${err.message || err.code || err}`;
       }
