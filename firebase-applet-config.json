@@ -1,10 +1,9 @@
 {
-  "projectId": "wide-cooler-gwjkk",
-  "appId": "1:864353871911:web:0a7b4ac921328580bec602",
-  "apiKey": "AIzaSyCq0VOiXoiTCrDTOyVAgFjHItJcdOzcE5o",
-  "authDomain": "wide-cooler-gwjkk.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-f8b8603c-3918-4051-993f-c6e0eab04254",
-  "storageBucket": "wide-cooler-gwjkk.firebasestorage.app",
-  "messagingSenderId": "864353871911",
-  "measurementId": ""
+  apiKey: "AIzaSyCzSlV5RGhYHQ_FNchzhYO111tWOB5_ZUg",
+  authDomain: "fit-wyscig.firebaseapp.com",
+  projectId: "fit-wyscig",
+  storageBucket: "fit-wyscig.firebasestorage.app",
+  messagingSenderId: "1089822942166",
+  appId: "1:1089822942166:web:f2a6bc884302848bec7a77",
+  measurementId: "G-FPH6E44VYG"
 }
