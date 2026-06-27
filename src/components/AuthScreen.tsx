@@ -272,13 +272,13 @@ export default function AuthScreen({
           </div>
           <div className="space-y-2">
             <h1 className="text-3xl font-heading font-black tracking-tight text-slate-900 leading-tight">
-              Summer Sprint
+              Fit Wyścig
             </h1>
             <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full inline-block">
               Wyzwanie do 25 Sierpnia
             </p>
             <p className="text-sm text-slate-500 max-w-xs mx-auto leading-relaxed pt-2">
-              Zróbcie z przyjaciółmi wyścig: kto schudnie najwięcej! Śledźcie swoje postępy na żywo jako animowane awatary na eleganckim torze wyścigowym.
+              Wspólne odchudzanie z przyjaciółmi
             </p>
           </div>
         </div>
