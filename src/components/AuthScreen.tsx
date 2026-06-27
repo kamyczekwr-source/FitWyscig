@@ -6,7 +6,7 @@
 import React, { useState } from "react";
 import { User } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
-import { db, loginWithEmail, registerWithEmail } from "../lib/firebase";
+import { db, loginWithEmail, registerWithEmail } from "../lib/firebaseAuth";
 import { AVAILABLE_AVATARS, UserProfile } from "../types";
 import { Scale, Loader2, Sparkles, LogIn, Camera, Upload, Mail, Key, UserPlus } from "lucide-react";
 import { resizeImageToMax } from "../lib/image";
