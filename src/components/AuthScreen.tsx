@@ -6,9 +6,9 @@
 import React, { useState } from "react";
 import { User } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
-import { db, loginWithGoogle } from "../lib/firebase";
+import { db, loginWithEmail, registerWithEmail } from "../lib/firebase";
 import { AVAILABLE_AVATARS, UserProfile } from "../types";
-import { Scale, Loader2, Sparkles, LogIn, Camera, Upload } from "lucide-react";
+import { Scale, Loader2, Sparkles, LogIn, Camera, Upload, Mail, Key, UserPlus } from "lucide-react";
 import { resizeImageToMax } from "../lib/image";
 import AvatarDisplay from "./AvatarDisplay";
 
@@ -31,15 +31,43 @@ export default function AuthScreen({
   const [customAvatarInput, setCustomAvatarInput] = useState("");
   const [isCreatingProfile, setIsCreatingProfile] = useState(false);
   const [error, setError] = useState("");
+  const [emailInput, setEmailInput] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
 
-  const handleGoogleLogin = async () => {
+  const handleEmailAuthAction = async (action: "login" | "register") => {
+    if (!emailInput.trim() || !passwordInput.trim()) {
+      setError("Wpisz adres e-mail oraz hasło.");
+      return;
+    }
+    if (passwordInput.length < 6) {
+      setError("Hasło musi mieć co najmniej 6 znaków.");
+      return;
+    }
     setIsLoggingIn(true);
     setError("");
     try {
-      await loginWithGoogle();
+      if (action === "login") {
+        await loginWithEmail(emailInput.trim(), passwordInput);
+      } else {
+        await registerWithEmail(emailInput.trim(), passwordInput);
+      }
     } catch (err: any) {
       console.error(err);
-      setError("Nie udało się zalogować przez Google. Spróbuj ponownie.");
+      let errorMsg = "Nie udało się autoryzować. Sprawdź e-mail i hasło.";
+      if (err.code === "auth/email-already-in-use") {
+        errorMsg = "Ten adres e-mail jest już w użyciu.";
+      } else if (err.code === "auth/invalid-email") {
+        errorMsg = "Niepoprawny format adresu e-mail.";
+      } else if (err.code === "auth/weak-password") {
+        errorMsg = "Hasło jest zbyt słabe (min. 6 znaków).";
+      } else if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
+        errorMsg = "Nieprawidłowy e-mail lub hasło.";
+      } else if (err.code === "auth/operation-not-allowed") {
+        errorMsg = "Logowanie e-mailem jest wyłączone w ustawieniach Firebase (kliknij Auth -> Sign-in method -> Email/Password w konsoli Firebase).";
+      } else {
+        errorMsg = `Błąd: ${err.message || err.code || err}`;
+      }
+      setError(errorMsg);
       setIsLoggingIn(false);
     }
   };
@@ -265,24 +293,79 @@ export default function AuthScreen({
           </div>
         )}
 
-        <div className="space-y-4">
-          <button
-            onClick={handleGoogleLogin}
-            disabled={isLoggingIn}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 px-6 rounded-xl shadow-md transition-all cursor-pointer uppercase text-xs tracking-widest flex items-center justify-center gap-3"
-          >
-            {isLoggingIn ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <LogIn className="w-4 h-4" />
-            )}
-            Zaloguj się przez Google
-          </button>
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-4 text-left">
+          <div>
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">
+              Adres E-mail
+            </label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                <Mail className="w-4 h-4" />
+              </span>
+              <input
+                type="email"
+                value={emailInput}
+                onChange={(e) => setEmailInput(e.target.value)}
+                placeholder="twoj@email.com"
+                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-800 text-sm transition-all"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">
+              Hasło (min. 6 znaków)
+            </label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                <Key className="w-4 h-4" />
+              </span>
+              <input
+                type="password"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                placeholder="••••••••"
+                minLength={6}
+                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold text-slate-800 text-sm transition-all"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <button
+              type="button"
+              disabled={isLoggingIn}
+              onClick={() => handleEmailAuthAction("login")}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-black py-3.5 px-4 rounded-xl shadow-md transition-all cursor-pointer uppercase text-xs tracking-widest flex items-center justify-center gap-2"
+            >
+              {isLoggingIn ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <LogIn className="w-4 h-4" />
+              )}
+              Zaloguj
+            </button>
+            <button
+              type="button"
+              disabled={isLoggingIn}
+              onClick={() => handleEmailAuthAction("register")}
+              className="w-full bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white font-black py-3.5 px-4 rounded-xl shadow-md transition-all cursor-pointer uppercase text-xs tracking-widest flex items-center justify-center gap-2"
+            >
+              {isLoggingIn ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <UserPlus className="w-4 h-4" />
+              )}
+              Zarejestruj
+            </button>
+          </div>
           
-          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider leading-relaxed">
-            Wymagane konto Google. Wszystkie Twoje dane i logi wagi są bezpiecznie zapisywane w bazie.
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider leading-relaxed text-center pt-2">
+            Wygodne i uniwersalne logowanie na każdym urządzeniu. Twoje dane pozostają w pełni bezpieczne.
           </p>
-        </div>
+        </form>
 
         {/* Feature Highlights */}
         <div className="grid grid-cols-3 gap-3 pt-6 border-t border-slate-100">
@@ -303,4 +386,3 @@ export default function AuthScreen({
       </div>
     </div>
   );
-}
