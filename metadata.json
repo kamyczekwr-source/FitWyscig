@@ -1,0 +1,6 @@
+{
+  "name": "FitWyścig",
+  "description": "Grupowy wyścig odchudzania z przyjaciółmi z ruchomymi awatarami na torze wyścigowym.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

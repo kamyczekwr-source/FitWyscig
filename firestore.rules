@@ -1,0 +1,171 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- REUSABLE SECURITY PRIMITIVES ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Master Gate Relational Sync: Is the user a participant in the given race?
+    function isParticipant(raceId) {
+      return isSignedIn();
+    }
+
+    // --- ENTITY VALIDATORS ---
+    
+    function isValidUser(data) {
+      return data.keys().hasAll(['userId', 'name', 'avatar', 'createdAt'])
+        && (data.keys().size() == 4 || (data.keys().size() == 5 && 'reminderSettings' in data))
+        && data.userId == request.auth.uid
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 100
+        && data.avatar is string && data.avatar.size() >= 1 && data.avatar.size() <= 200000
+        && data.createdAt is timestamp
+        && (
+          !('reminderSettings' in data) || (
+            data.reminderSettings is map
+            && data.reminderSettings.keys().hasAll(['enabled', 'days', 'time'])
+            && data.reminderSettings.keys().size() == 3
+            && data.reminderSettings.enabled is bool
+            && data.reminderSettings.time is string && data.reminderSettings.time.size() == 5
+            && data.reminderSettings.days is list && data.reminderSettings.days.size() <= 7
+            && (data.reminderSettings.days.size() == 0 || data.reminderSettings.days[0] is int)
+          )
+        );
+    }
+
+    function isValidRace(data) {
+      return data.keys().hasAll(['id', 'name', 'creatorId', 'creatorName', 'targetDate', 'targetLoss', 'createdAt'])
+        && (data.keys().size() == 7 || (data.keys().size() == 8 && 'startDate' in data))
+        && isValidId(data.id)
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 100
+        && data.creatorId == request.auth.uid
+        && data.creatorName is string && data.creatorName.size() >= 1 && data.creatorName.size() <= 100
+        && data.targetDate is string && data.targetDate.size() == 10
+        && (!('startDate' in data) || (data.startDate is string && data.startDate.size() == 10))
+        && data.targetLoss is number && data.targetLoss > 0 && data.targetLoss <= 100
+        && data.createdAt is timestamp;
+    }
+
+    function isValidParticipant(data) {
+      return data.keys().hasAll(['userId', 'name', 'avatar', 'startWeight', 'currentWeight', 'joinedAt'])
+        && (data.keys().size() == 6 || (data.keys().size() == 7 && 'revealStartWeight' in data))
+        && data.userId == request.auth.uid
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 100
+        && data.avatar is string && data.avatar.size() >= 1 && data.avatar.size() <= 200000
+        && data.startWeight is number && data.startWeight > 10 && data.startWeight <= 500
+        && data.currentWeight is number && data.currentWeight > 10 && data.currentWeight <= 500
+        && data.joinedAt is timestamp
+        && (!('revealStartWeight' in data) || data.revealStartWeight is bool);
+    }
+
+    function isValidWeighIn(data) {
+      return data.keys().hasAll(['id', 'userId', 'userName', 'weight', 'date', 'createdAt'])
+        && (data.keys().size() == 6 || (data.keys().size() == 7 && 'note' in data))
+        && isValidId(data.id)
+        && data.userId == request.auth.uid
+        && data.userName is string && data.userName.size() >= 1 && data.userName.size() <= 100
+        && data.weight is number && data.weight > 10 && data.weight <= 500
+        && data.date is string && data.date.size() == 10
+        && data.createdAt is timestamp
+        && (!('note' in data) || (data.note is string && data.note.size() <= 500));
+    }
+
+
+    // --- COLLECTION RULES ---
+
+    // 1. Users collection
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && isValidUser(incoming())
+        && incoming().createdAt == existing().createdAt; // createdAt is immortal
+      allow delete: if isOwner(userId);
+    }
+
+    // 2. Races collection
+    match /races/{raceId} {
+      allow read: if isSignedIn(); // Allow reading metadata to find or join a race
+      allow create: if isSignedIn() && isValidId(raceId) && isValidRace(incoming());
+      allow update: if isSignedIn() && isValidRace(incoming())
+        && incoming().creatorId == existing().creatorId // creator is immortal
+        && incoming().createdAt == existing().createdAt // createdAt is immortal
+        && (
+          // Creator can update all fields except immortal ones
+          request.auth.uid == existing().creatorId
+          // Or participants can update just to keep the doc but not changing values (or list is empty/same)
+          || incoming().diff(existing()).affectedKeys().size() == 0
+        );
+      allow delete: if isSignedIn() && request.auth.uid == existing().creatorId;
+
+      // 3. Participants Subcollection
+      match /participants/{participantId} {
+        allow read: if isSignedIn(); // Allow other signed-in users to see race participants
+        allow create: if isSignedIn() && isValidId(participantId) && isOwner(participantId) && isValidParticipant(incoming());
+        allow update: if isOwner(participantId) && isValidParticipant(incoming())
+          && incoming().joinedAt == existing().joinedAt // joinedAt is immortal
+          && incoming().startWeight == existing().startWeight; // startWeight is immortal
+        allow delete: if isOwner(participantId);
+      }
+
+      // 4. Weigh-ins Subcollection
+      match /weighIns/{weighInId} {
+        // Can only read logs if you are a participant of this race
+        allow read, list: if isParticipant(raceId);
+        
+        // Can log weight if you are a participant of this race and it's your own log
+        allow create: if isParticipant(raceId) 
+          && isValidId(weighInId)
+          && incoming().userId == request.auth.uid
+          && isValidWeighIn(incoming());
+          
+        // Can edit your own logs
+        allow update: if isParticipant(raceId)
+          && existing().userId == request.auth.uid
+          && incoming().userId == request.auth.uid
+          && isValidWeighIn(incoming())
+          && incoming().createdAt == existing().createdAt; // createdAt is immortal
+          
+        // Can delete your own logs
+        allow delete: if isParticipant(raceId)
+          && existing().userId == request.auth.uid;
+      }
+
+      // 5. Chats Subcollection
+      match /chats/{chatId} {
+        allow read, list: if isParticipant(raceId);
+        allow create: if isParticipant(raceId)
+          && isValidId(chatId)
+          && incoming().userId == request.auth.uid
+          && incoming().userName is string
+          && incoming().userAvatar is string
+          && incoming().message is string
+          && incoming().message.size() >= 1 && incoming().message.size() <= 500
+          && incoming().createdAt is timestamp;
+        allow delete: if isParticipant(raceId)
+          && existing().userId == request.auth.uid;
+      }
+    }
+  }
+}

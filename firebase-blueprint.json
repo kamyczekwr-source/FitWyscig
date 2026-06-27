@@ -1,0 +1,223 @@
+{
+  "entities": {
+    "user": {
+      "title": "User Profile",
+      "description": "Public profile of a user containing their display name and selected avatar",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Unique user ID matching request.auth.uid"
+        },
+        "name": {
+          "type": "string",
+          "description": "User's display name"
+        },
+        "avatar": {
+          "type": "string",
+          "description": "Emoji or icon code representing the user's avatar"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the user registered"
+        },
+        "reminderSettings": {
+          "type": "object",
+          "description": "User's weigh-in reminder configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "days": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "Days of the week (1=Monday, ..., 0=Sunday)"
+            },
+            "time": {
+              "type": "string",
+              "description": "Format 'HH:MM' representing the reminder time"
+            }
+          },
+          "required": ["enabled", "days", "time"]
+        }
+      },
+      "required": ["userId", "name", "avatar", "createdAt"]
+    },
+    "race": {
+      "title": "Weight Loss Race",
+      "description": "A weight loss race group with a target date and target weight loss goal",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique race group invite code"
+        },
+        "name": {
+          "type": "string",
+          "description": "The custom name of the race"
+        },
+        "creatorId": {
+          "type": "string",
+          "description": "User ID of the race creator"
+        },
+        "creatorName": {
+          "type": "string",
+          "description": "Display name of the race creator"
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date",
+          "description": "The start date of the race (e.g., 2026-06-27)"
+        },
+        "targetDate": {
+          "type": "string",
+          "format": "date",
+          "description": "The deadline of the race (e.g., 2026-08-25)"
+        },
+        "targetLoss": {
+          "type": "number",
+          "description": "The target weight loss in kg (e.g. 5, 8, 10)"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the race was created"
+        }
+      },
+      "required": ["id", "name", "creatorId", "creatorName", "startDate", "targetDate", "targetLoss", "createdAt"]
+    },
+    "participant": {
+      "title": "Race Participant",
+      "description": "A participant enrolled in a specific weight loss race",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "User ID of the participant"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the participant"
+        },
+        "avatar": {
+          "type": "string",
+          "description": "Selected avatar identifier"
+        },
+        "startWeight": {
+          "type": "number",
+          "description": "The initial weight logged when joining the race, in kg"
+        },
+        "currentWeight": {
+          "type": "number",
+          "description": "The participant's current weight, in kg"
+        },
+        "joinedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the user joined this race"
+        },
+        "revealStartWeight": {
+          "type": "boolean",
+          "description": "Whether the participant reveals their starting weight to others"
+        }
+      },
+      "required": ["userId", "name", "avatar", "startWeight", "currentWeight", "joinedAt"]
+    },
+    "weighIn": {
+      "title": "Weigh-in Record",
+      "description": "A progress log entry of weight logged by a participant during the race",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique weigh-in document ID"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user logging their weight"
+        },
+        "userName": {
+          "type": "string",
+          "description": "The display name of the user logging their weight"
+        },
+        "weight": {
+          "type": "number",
+          "description": "The logged weight in kg"
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "The date of the log (e.g., YYYY-MM-DD)"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when logged"
+        },
+        "note": {
+          "type": "string",
+          "description": "An optional motivational note"
+        }
+      },
+      "required": ["id", "userId", "userName", "weight", "date", "createdAt"]
+    },
+    "chatMessage": {
+      "title": "Chat Message",
+      "description": "A real-time chat message posted inside a race room",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique message ID"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The author ID"
+        },
+        "userName": {
+          "type": "string",
+          "description": "The author's nickname"
+        },
+        "userAvatar": {
+          "type": "string",
+          "description": "The author's avatar URL or color"
+        },
+        "message": {
+          "type": "string",
+          "description": "The text message content"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when sent"
+        }
+      },
+      "required": ["id", "userId", "userName", "userAvatar", "message", "createdAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "user",
+      "description": "Information about a registered user"
+    },
+    "races/{raceId}": {
+      "schema": "race",
+      "description": "Main document for each weight loss group race"
+    },
+    "races/{raceId}/participants/{userId}": {
+      "schema": "participant",
+      "description": "Subcollection containing all participants in the race"
+    },
+    "races/{raceId}/weighIns/{weighInId}": {
+      "schema": "weighIn",
+      "description": "Subcollection of all weigh-ins by participants in this race"
+    },
+    "races/{raceId}/chats/{chatId}": {
+      "schema": "chatMessage",
+      "description": "Subcollection of chat messages within this race"
+    }
+  }
+}
