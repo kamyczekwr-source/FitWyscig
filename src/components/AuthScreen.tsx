@@ -3,7 +3,7 @@ import { User } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 // Upewnij się, że to wskazuje na Twój plik z logiką, 
 // jeśli zmieniłeś nazwę na firebaseAuth.ts, użyj "../lib/firebaseAuth"
-import { db, loginWithEmail, registerWithEmail } from "../lib/firebaseAuth"; 
+import { db, loginWithEmail, registerWithEmail } from "../lib/firebase"; 
 import { AVAILABLE_AVATARS, UserProfile } from "../types";
 import { Scale, Loader2, Sparkles, LogIn, Camera, Upload, Mail, Key, UserPlus } from "lucide-react";
 import { resizeImageToMax } from "../lib/image";
