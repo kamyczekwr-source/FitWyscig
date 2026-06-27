@@ -4,16 +4,33 @@
  */
 
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { 
+  getAuth, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  signOut,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword
+} from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import firebaseConfig from "../../firebase-applet-config.json";
 
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore with custom databaseId if configured
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth();
 export const googleProvider = new GoogleAuthProvider();
+
+// TE DWIE FUNKCJE MUSZĄ TU BYĆ, ŻEBY TO DZIAŁAŁO:
+export async function loginWithEmail(email: string, password: string) {
+  const result = await signInWithEmailAndPassword(auth, email, password);
+  return result.user;
+}
+
+export async function registerWithEmail(email: string, password: string) {
+  const result = await createUserWithEmailAndPassword(auth, email, password);
+  return result.user;
+}
 
 export enum OperationType {
   CREATE = "create",
