@@ -1576,11 +1576,17 @@ export default function App() {
 
                   <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
                     {[...raceParticipants]
-                      .sort((a, b) => {
-                        const lossA = a.startWeight - a.currentWeight;
-                        const lossB = b.startWeight - b.currentWeight;
-                        return lossB - lossA;
-                      })
+             .sort((a, b) => {
+  const lossA = a.startWeight - a.currentWeight;
+  const lossB = b.startWeight - b.currentWeight;
+  
+  // Jeśli jedna osoba spełnia warunek 1kg, a druga nie
+  if (lossA >= 1.0 && lossB < 1.0) return -1;
+  if (lossB >= 1.0 && lossA < 1.0) return 1;
+  
+  // Jeśli oboje spełniają lub oboje nie – sortuj po wyniku
+  return lossB - lossA;
+})
                       .map((participant, index) => {
                         const loss = participant.startWeight - participant.currentWeight;
                         const rank = index + 1;
