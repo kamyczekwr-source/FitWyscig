@@ -17,11 +17,11 @@ import {
   limit,
 } from "firebase/firestore";
 import { auth, db, logoutUser, handleFirestoreError, OperationType } from "./lib/firebase";
-import { UserProfile, Participant, WeighIn, AVAILABLE_AVATARS } from "./types";
+import { UserProfile, Participant, WeighIn, AVAILABLE_AVATARS, Race } from "./types";
 import AuthScreen from "./components/AuthScreen";
-import Track from "./components/Track";
+import RaceTrack from "./components/Track"; // Zaktualizowana nazwa
 import WeighInModal from "./components/WeighInModal";
-import Chat from "./components/Chat";
+import RaceChat from "./components/Chat"; // Zaktualizowana nazwa
 import {
   Scale,
   LogOut,
@@ -47,7 +47,7 @@ import {
 } from "lucide-react";
 import { resizeImageToMax } from "./lib/image";
 import AvatarDisplay from "./components/AvatarDisplay";
-import EditModal from "./components/EditModal";
+import EditRaceModal from "./components/EditModal"; // Zaktualizowana nazwa
 
 export default function App() {
   // Authentication & Profile states
