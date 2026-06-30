@@ -17,7 +17,7 @@ import {
   limit,
 } from "firebase/firestore";
 import { auth, db, logoutUser, handleFirestoreError, OperationType } from "./lib/firebase";
-import { UserProfile, , Participant, WeighIn, AVAILABLE_AVATARS } from "./types";
+import { UserProfile, Participant, WeighIn, AVAILABLE_AVATARS } from "./types";
 import AuthScreen from "./components/AuthScreen";
 import Track from "./components/Track";
 import WeighInModal from "./components/WeighInModal";
