@@ -131,7 +131,7 @@ export default function RaceTrack({ race, participants, currentUserId }: RaceTra
                   const isCurrentUser = participant.userId === currentUserId;
 
                   // Tooltip styling based on position
-                  const isFirst = rank === 1;
+                  const isFirst = rank === 1 && loss >= 1;
                   const hasCrown = loss >= celWeight;
                   const inSkyZone = loss > celWeight;
                   
