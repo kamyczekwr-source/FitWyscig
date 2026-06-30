@@ -1218,22 +1218,19 @@ export default function App() {
                       KOD: {userRace.id}
                     </span>
                   </div>
-                <RaceTrack
-  race={userRace}
-  participants={
-    Array.isArray(raceParticipants) 
-      ? [...raceParticipants].sort((a, b) => {
-          const lossA = (a.startWeight || 0) - (a.currentWeight || 0);
-          const lossB = (b.startWeight || 0) - (b.currentWeight || 0);
-          
-          if (lossA >= 1.0 && lossB < 1.0) return -1;
-          if (lossB >= 1.0 && lossA < 1.0) return 1;
-          return lossB - lossA;
-        })
-      : []
-  }
-  currentUserId={user?.uid || ""}
-/>
+               {userRace && Array.isArray(raceParticipants) ? (
+  <RaceTrack
+    race={userRace}
+    participants={[...raceParticipants].sort((a, b) => {
+      const lossA = (a.startWeight || 0) - (a.currentWeight || 0);
+      const lossB = (b.startWeight || 0) - (b.currentWeight || 0);
+      if (lossA >= 1.0 && lossB < 1.0) return -1;
+      if (lossB >= 1.0 && lossA < 1.0) return 1;
+      return lossB - lossA;
+    })}
+    currentUserId={user?.uid || ""}
+  />
+) : null}
                 </div>
 
                 {/* Real-time Race Room Chat */}
