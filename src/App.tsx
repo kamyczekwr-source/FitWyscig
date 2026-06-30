@@ -1218,11 +1218,15 @@ export default function App() {
                       KOD: {userRace.id}
                     </span>
                   </div>
-                  <RaceTrack
-                    race={userRace}
-                    participants={raceParticipants}
-                    currentUserId={user.uid}
-                  />
+                  <RaceTrack participants="{[...raceParticipants].sort((a," race="{userRace}"> {
+    const lossA = a.startWeight - a.currentWeight;
+    const lossB = b.startWeight - b.currentWeight;
+    if (lossA >= 1.0 && lossB < 1.0) return -1;
+    if (lossB >= 1.0 && lossA < 1.0) return 1;
+    return lossB - lossA;
+  })}
+  currentUserId={user.uid}
+/>
                 </div>
 
                 {/* Real-time Race Room Chat */}
