@@ -671,3 +671,4 @@ export default function App() {
         await setDoc(doc(db, "races", userRace.id, "participants", user.uid), {
           name: editNickname.trim(),
           avatar
+}
