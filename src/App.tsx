@@ -1220,12 +1220,19 @@ export default function App() {
                   </div>
                 <RaceTrack
   race={userRace}
-  participants={[...raceParticipants].sort((a, b) => 
-    (b.startWeight - b.currentWeight >= 1.0 && a.startWeight - a.currentWeight < 1.0) ? -1 : 
-    (a.startWeight - a.currentWeight >= 1.0 && b.startWeight - b.currentWeight < 1.0) ? 1 : 
-    (b.startWeight - b.currentWeight) - (a.startWeight - a.currentWeight)
-  )}
-  currentUserId={user.uid}
+  participants={
+    Array.isArray(raceParticipants) 
+      ? [...raceParticipants].sort((a, b) => {
+          const lossA = (a.startWeight || 0) - (a.currentWeight || 0);
+          const lossB = (b.startWeight || 0) - (b.currentWeight || 0);
+          
+          if (lossA >= 1.0 && lossB < 1.0) return -1;
+          if (lossB >= 1.0 && lossA < 1.0) return 1;
+          return lossB - lossA;
+        })
+      : []
+  }
+  currentUserId={user?.uid || ""}
 />
                 </div>
 
