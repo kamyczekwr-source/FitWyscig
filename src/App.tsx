@@ -17,11 +17,11 @@ import {
   limit,
 } from "firebase/firestore";
 import { auth, db, logoutUser, handleFirestoreError, OperationType } from "./lib/firebase";
-import { UserProfile, Race, Participant, WeighIn, AVAILABLE_AVATARS } from "./types";
+import { UserProfile, , Participant, WeighIn, AVAILABLE_AVATARS } from "./types";
 import AuthScreen from "./components/AuthScreen";
-import RaceTrack from "./components/RaceTrack";
+import Track from "./components/Track";
 import WeighInModal from "./components/WeighInModal";
-import RaceChat from "./components/RaceChat";
+import Chat from "./components/Chat";
 import {
   Scale,
   LogOut,
@@ -47,7 +47,7 @@ import {
 } from "lucide-react";
 import { resizeImageToMax } from "./lib/image";
 import AvatarDisplay from "./components/AvatarDisplay";
-import EditRaceModal from "./components/EditRaceModal";
+import EditModal from "./components/EditModal";
 
 export default function App() {
   // Authentication & Profile states
@@ -1218,13 +1218,13 @@ export default function App() {
                       KOD: {userRace.id}
                     </span>
                   </div>
-                  <RaceTrack participants="{[...raceParticipants].sort((a," race="{userRace}"> {
-    const lossA = a.startWeight - a.currentWeight;
-    const lossB = b.startWeight - b.currentWeight;
-    if (lossA >= 1.0 && lossB < 1.0) return -1;
-    if (lossB >= 1.0 && lossA < 1.0) return 1;
-    return lossB - lossA;
-  })}
+                <RaceTrack
+  race={userRace}
+  participants={[...raceParticipants].sort((a, b) => 
+    (b.startWeight - b.currentWeight >= 1.0 && a.startWeight - a.currentWeight < 1.0) ? -1 : 
+    (a.startWeight - a.currentWeight >= 1.0 && b.startWeight - b.currentWeight < 1.0) ? 1 : 
+    (b.startWeight - b.currentWeight) - (a.startWeight - a.currentWeight)
+  )}
   currentUserId={user.uid}
 />
                 </div>
